@@ -6,5 +6,5 @@ export const DatetimeScalar = asNexusMethod(
     name: "DateTime"
   }),
   "DateTime",
-  typeof Date
+  typeof new Date
 );

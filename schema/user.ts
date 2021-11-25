@@ -2,7 +2,7 @@ import { extendType, objectType, stringArg, connectionPlugin } from "nexus";
 import { DatetimeScalar } from "./datetime-scalar";
 
 export const UserQueryCore = extendType({
-  type: "Viewer",
+  type: "User",
   definition(t) {
     t.field("User", {
       type: "User",
@@ -10,7 +10,7 @@ export const UserQueryCore = extendType({
         id: stringArg({ default: "" })
       },
       resolve(_root, args, ctx) {
-        return ctx.user.findOne(args);
+        return ctx.user.findUnique({ id: String(args?.id) });
       }
     });
   }
