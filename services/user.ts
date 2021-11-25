@@ -5,8 +5,8 @@ import { PaginationArgs, relayToPrismaPagination } from "./utils";
 export class UserService {
   constructor(protected prisma: PrismaClient) {}
 
-  async findOne(params: { id: string }) {
-    const user = await this.prisma.user.findOne({
+  async findUnique(params: { id: string }) {
+    const user = await this.prisma.user.findUnique({
       where: { id: fromGlobalId(params.id).id }
     });
 

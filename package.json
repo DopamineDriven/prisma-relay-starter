@@ -20,10 +20,13 @@
     "graphql": "15.7.2",
     "graphql-relay": "^0.9.0",
     "graphql-scalars": "^1.13.6",
+    "micro": "^9.3.4",
+    "micro-cors": "^0.1.1",
     "nexus": "^1.1.0"
   },
   "devDependencies": {
     "@types/faker": "^5.5.9",
+    "@types/micro-cors": "^0.1.2",
     "@types/node": "^16.11.10",
     "@vercel/node": "^1.12.1",
     "faker": "^5.5.3",
