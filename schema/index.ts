@@ -1,8 +1,9 @@
-import { makeSchema, connectionPlugin, convertSDL } from "nexus";
-import { DateTimeResolver, JSONObjectResolver } from "graphql-scalars";
+import { makeSchema, connectionPlugin, core, idArg } from "nexus";
 import { GraphQLScalarType } from "graphql";
 import * as typeDefs from "./definitions";
 import * as path from "path";
+import { prisma, PrismaClient } from "@prisma/client";
+import { Context } from "./context";
 
 const nodeModulePath = path.join(
   __dirname,
@@ -15,44 +16,29 @@ const nodeModulePath = path.join(
 
 const localPath = require.resolve("./context");
 
-export const schema = makeSchema({
-  types: { ...typeDefs },
+const schema = makeSchema({
+  types: typeDefs,
   plugins: [
     connectionPlugin({
       includeNodesField: true, // relay spec pagination
-      nexusSchemaImportId: "",
-      strictArgs: true,
-      cursorFromNode(node) {
-        return node.id;
-      }
+      strictArgs: true
     })
   ],
-  contextType: nodeModulePath
-    ? {
-        alias: "prisma",
-        export: "prisma",
-        module: path.join(
-          __dirname,
-          "..",
-          "node_modules",
-          ".prisma",
-          "client",
-          "index.d.ts"
-        )
-      }
-    : {
-        alias: "ctx",
-        export: "ctx.Context",
-        module: require.resolve("../api")
-      },
+  contextType: {
+    module: path.join(
+      process.cwd(),
+      "..",
+      "node_modules",
+      ".prisma",
+      "client",
+      "index.d.ts"
+    ),
+    export: "Context"
+  },
   shouldGenerateArtifacts: process.env.NODE_ENV !== "production",
   outputs: {
     typegen: path.join(__dirname, "..", "nexus-typegen.ts"),
     schema: path.join(__dirname, "..", "schema.graphql")
   }
 });
-
-const jsonScalar = new GraphQLScalarType({
-  ...JSONObjectResolver,
-  name: "Json"
-});
+export default schema;

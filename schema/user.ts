@@ -1,4 +1,5 @@
 import { extendType, objectType, stringArg, connectionPlugin } from "nexus";
+import { DatetimeScalar } from "./datetime-scalar";
 
 export const UserQueryCore = extendType({
   type: "Viewer",
@@ -18,12 +19,10 @@ export const UserQueryCore = extendType({
 export const User = objectType({
   name: "User",
   definition(t) {
-    t.implements("Node");
     t.string("id");
     t.nullable.string("image");
     t.nullable.string("name");
     t.nullable.string("email");
-    t.nullable.string("emailVerified");
     t.nullable.boolean("isAdmin");
     t.nullable.string("avatar");
   }
