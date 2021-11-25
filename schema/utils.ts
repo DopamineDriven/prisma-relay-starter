@@ -1,13 +1,12 @@
-import { core, inputObjectType, interfaceType } from "nexus";
-import { NexusExtendInputTypeDef } from "nexus/dist/core";
+import { core, inputObjectType } from "nexus";
 import { OrderByEnum } from "./meta";
 
-export function BuildOrderBy<T extends keyof core.GetGen<"rootTypes">>(
-  model: T,
-  fields: Array<keyof core.GetGen<"rootTypes">>
+export function buildOrderBy<M extends keyof core.GetGen<"rootTypes">>(
+  model: M,
+  fields: Array<keyof core.GetGen<"rootTypes">[M]>
 ) {
-  return interfaceType({
-    name: `${model.toString()}Orderby`,
+  return inputObjectType<`${M}OrderBy`>({
+    name: `${model}OrderBy`,
     definition(t) {
       for (const f of fields) {
         t.field(f as string, { type: OrderByEnum });

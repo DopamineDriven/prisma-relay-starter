@@ -4,6 +4,8 @@
     "module": "commonjs",
     "lib": ["esnext"],
     "strict": true,
+    "strictNullChecks": true,
+    "strictBindCallApply": true,
     "rootDir": ".",
     "sourceMap": true,
     "esModuleInterop": true,
