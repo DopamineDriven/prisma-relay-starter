@@ -1,2 +1,2 @@
 # prisma-relay-starter
-prisma, nexus, typescript, relay, nextjs
+prisma, nexus, typescript, relay
