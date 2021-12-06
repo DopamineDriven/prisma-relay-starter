@@ -2,8 +2,6 @@ import { makeSchema, connectionPlugin, core, idArg } from "nexus";
 import { GraphQLScalarType } from "graphql";
 import * as typeDefs from "./definitions";
 import * as path from "path";
-import { prisma, PrismaClient } from "@prisma/client";
-import { Context } from './context';
 
 const nodeModulePath = path.join(
   __dirname,
@@ -14,16 +12,39 @@ const nodeModulePath = path.join(
   "index.d.ts"
 );
 
-const localPath = require.resolve("./context");
+const localPath = path.join(__dirname, "..", "/context/index.ts");
 
 const schema = makeSchema({
   types: [typeDefs],
   plugins: [
     connectionPlugin({
-      includeNodesField: true, // relay spec pagination
-      strictArgs: true
+      includeNodesField: true,
+      strictArgs: true,
+      disableBackwardPagination: false,
+      disableForwardPagination: false,
+      cursorFromNode(node) {
+        return node.id;
+      }
     })
   ],
+  sourceTypes: {
+    modules: [
+      {
+        module: path.join(
+          __dirname,
+          "..",
+          "/node_modules/.prisma/client/index.d.ts"
+        ),
+        alias: "prisma"
+      }
+    ]
+  },
+  features: {
+    abstractTypeStrategies: {
+      __typename: true,
+      resolveType: true
+    }
+  },
   contextType: {
     module: localPath,
     export: "Context"

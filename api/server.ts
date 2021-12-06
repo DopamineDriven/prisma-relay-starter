@@ -10,7 +10,9 @@ import {
   ApolloServerPluginLandingPageGraphQLPlayground,
   ApolloServerPluginInlineTrace
 } from "apollo-server-core";
-
+import { GraphQLSchema } from "graphql";
+import { createContext } from "../context/index";
+import { IncomingMessage, ServerResponse } from "http";
 
 const prisma = new PrismaClient();
 
@@ -18,13 +20,15 @@ const server = new ApolloServer({
   allowBatchedHttpRequests: true,
   introspection: true,
   debug: true,
-  schema,
-  plugins: [ApolloServerPluginLandingPageDisabled()],
-  context: () => {
-    return buildServices(prisma);
+  schema: new GraphQLSchema(schema.toConfig()),
+  context: (req: IncomingMessage, res: ServerResponse) => {
+    return buildServices(prisma), prisma, req, res;
   }
 });
 
-server.listen().then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
-});
+server
+  .listen()
+  .then(({ url }) => {
+    console.log(`🚀 Server ready at ${url}`);
+  })
+  .then(() => server.getMiddleware({ path: "./index.ts" }));

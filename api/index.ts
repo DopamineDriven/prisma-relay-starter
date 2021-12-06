@@ -5,6 +5,7 @@ import { buildServices } from "../services";
 import { PrismaClient } from "@prisma/client";
 import cors from "micro-cors";
 import { RequestHandler } from "micro";
+import { createContext } from "../context/index";
 // export const corsMiddleware = (handler: RequestHandler) => {
 //   return cors({
 //     origin: "*",
@@ -35,12 +36,13 @@ const allowCors =
   async (req: IncomingMessage | RequestInfo, res: ServerResponse) => {
     res.setHeader("Access-Control-Allow-Credentials", "true");
     res.setHeader("Access-Control-Allow-Origin", "*");
-    // another option
-    // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader(
+      "Cache-Control",
+      "public, stale-while-revalidate=600, s-maxage=1200"
+    );
     res.setHeader(
       "Access-Control-Allow-Headers",
-      "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+      "Origin, X-Requested-With, Content-Type, Accept, apollo-federation-include-trace, Authorization"
     );
     if (res.req.method === "OPTIONS") {
       res.writeHead(200).end();
@@ -54,8 +56,12 @@ export const handler = graphqlHTTP((...props) => ({
   graphiql: true,
   pretty: true,
   context: {
-    ...buildServices(prisma)
-  }
+    createContext: {
+      buildServices: buildServices(prisma),
+      prisma
+    }
+  },
+  ...props
 }));
 
 export default allowCors(handler);

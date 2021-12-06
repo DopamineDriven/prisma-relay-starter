@@ -2,23 +2,23 @@ import { fromGlobalId } from "graphql-relay";
 import { PaginationArgs, relayToPrismaPagination } from "./utils";
 import { PrismaClient } from "@prisma/client";
 
-export class UserService {
+export class VerificationToken {
   constructor(protected prisma: PrismaClient) {}
 
   async findUnique(params: { id: string }) {
-    const user = await this.prisma.user.findUnique({
+    const verificationToken = await this.prisma.verificationToken.findUnique({
       where: { id: fromGlobalId(params.id).id }
     });
 
-    if (!user) {
+    if (!verificationToken) {
       throw new Error("could not find user with id: " + params.id);
     }
 
-    return user;
+    return verificationToken;
   }
 
-  findMany(params: PaginationArgs) {
-    return this.prisma.user.findMany({
+  async findMany(params: PaginationArgs) {
+    return await this.prisma.verificationToken.findMany({
       ...relayToPrismaPagination(params)
     });
   }

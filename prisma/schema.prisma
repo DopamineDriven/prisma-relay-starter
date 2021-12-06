@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "interactiveTransactions"]
 }
 
 datasource db {
@@ -7,94 +8,106 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Account {
-  /// Auth
-  id                String    @id @default(uuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refreshToken      String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  sessionState      String?
-  oauthTokenSecret  String?
-  oauthToken        String?
-  /// Common
-  createdAt         DateTime  @default(now()) 
-  updatedAt         DateTime  @updatedAt
+model User {
+  /// User Shape -- note, prisma uses uuid v4 -- uuid will be valid ACROSS all databases -- no conflicts
+  id             String     @id @default(uuid())
+  name           String?
+  email          String     @unique
+  email_verified DateTime?
+  image          String?
+  role           Role       @default(USER)
+  department     Department @default(UNASSIGNED)
+  profile        Profile?   @relation("UserProfile")
+  accounts       Account[]  @relation("Accounts")
+  entries        Entry[]    @relation("Author")
+  sessions       Session[]  @relation("Sessions")
+}
 
-  accountOwner              User      @relation("AccountOwner",fields: [userId], references: [id], onDelete: Cascade)
-  @@unique([provider, providerAccountId])
-  @@map("accounts")
+model Profile {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  memberSince DateTime  @default(now())
+  coverImage  String?
+  dob         DateTime? @db.Date
+  phoneNumber String?
+  bio         String?
+  user        User      @relation("UserProfile", fields: [userId], references: [id])
 }
 
 model Entry {
-  id        String  @id @default(uuid())
-entryId Int @default(autoincrement())
-  title     String
-  published Boolean @default(false)
-  authorId    String  @map("user_id")
-  content   String?
-  author      User   @relation("Entries", fields: [authorId], references: [id])
+  id            String    @id @default(uuid())
+  title         String
+  published     Boolean   @default(false)
+  userId        String    @map("user_id")
+  content       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime? @updatedAt
+  featuredImage String?
+  author        User      @relation("Author", fields: [userId], references: [id])
+
   @@map("entries")
+}
+
+model Account {
+  id                 String  @id @default(uuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  scope              String?
+  access_token       String?
+  expires_at         Int?
+  id_token           String?
+  token_type         String?
+  oauth_token        String?
+  oauth_token_secret String?
+  refresh_token      String?
+  session_state      String?
+  user               User    @relation("Accounts", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
 model Session {
   id           String   @id @default(uuid())
   sessionToken String   @unique
-  accessToken  String?
   userId       String
   expires      DateTime
-  sessionOwner         User     @relation("Sessions",fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation("Sessions", fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("sessions")
 }
 
-model User {
-  /// User Shape -- note, prisma uses uuid v4 -- uuid will be valid across all databases -- no conflicts
-  id             String    @id @default(uuid())
-  name           String?
-  email          String?   @unique
-  emailVerified DateTime?
-  avatar          String?
-  isAdmin        Boolean   @default(false) @map("is_admin")
-  accounts       Account[] @relation("AccountOwner")
-  entries        Entry[] @relation("Entries")
-  sessions       Session[] @relation("Sessions")
-  profile        Profile? @relation("UserProfile")
-  @@unique([email, name])
-  @@map("users")
-}
-
-model Profile {
-    id String @id @default(uuid())
-    userId String
-    bio Json?
-    coverImg String?
-    profileImg String?
-      phoneNumber       String?   @default("")
-  dob               String?
-    isOnline          Boolean   @default(false)
-  lastActiveIp      String?   
-  lastSeen          DateTime?
-  role              Role      @default(USER)
-    user User @relation("UserProfile", fields: [userId], references: [id])
-}
-
-/// Passwordless login for 2FA et al.
-model VerificationRequest {
+/// Passwordless login for email providers
+model VerificationToken {
+  id         String   @id @default(uuid())
   identifier String
   token      String   @unique
   expires    DateTime
+
   @@unique([identifier, token])
-  @@map("verification_requests")
+  @@map("verification_tokens")
 }
 
 enum Role {
-    USER
-    ADMIN 
-    SUPERADMIN
+  SUPERADMIN
+  ADMIN
+  USER     
+}
+
+  enum Department {
+  UNASSIGNED
+  CUSTOMER_SUPPORT
+  ENGINEERING
+  MEDIA
+  DESIGN
+  EXECUTIVE
+  MEDICAL
+  LEGAL
+  FINANCE
+  MARKETING
+  OPERATIONS
+  SALES
+  HUMAN_RESOURCES
 }
